@@ -29,7 +29,7 @@ const loginAccount = async (req, res) => {
         .status(400)
         .json({ message: "either username, pass is missing" });
     }
-    const resultedUser = await Users.findOne({ username, password });
+    const resultedUser = await Users.matchPassword(username, password)
     if (resultedUser) {
       const access_token = getToken(resultedUser);
       return res.status(200).json({ access_token, message: "success" });
@@ -52,9 +52,7 @@ const changePass = async (req, res) => {
       return res.status(400).json({ message: "emailId is missing" });
     }
     const otpVerification = await OtpModel.findOne({ emailId, otp });
-    console.log("a :", otpVerification);
     if (otpVerification.verified) {
-      console.log("otp verification :", otpVerification);
       await OtpModel.findOneAndDelete({ emailId, otp });
       await Users.findOneAndUpdate({ emailId }, { password });
       return res

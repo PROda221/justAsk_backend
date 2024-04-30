@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { createHmac, randomBytes } = require("crypto");
 
 const allGenres = [
   "Health & Fitness",
@@ -34,6 +35,7 @@ const UserSchema = new mongoose.Schema(
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     emailId: { type: String, required: true, unique: true },
+    salt: { type: String },
     adviceGenre: {
       type: [
         {
@@ -44,8 +46,39 @@ const UserSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { TimeStamps: true }
+  { timestamps: true }
 );
+
+UserSchema.pre("save", function (next) {
+  const user = this;
+  if (!user.isModified("password")) return;
+
+  const salt = randomBytes(16).toString();
+  const hashedPass = createHmac("sha256", salt)
+    .update(user.password)
+    .digest("hex");
+
+  this.salt = salt;
+  this.password = hashedPass;
+  next();
+});
+
+UserSchema.static("matchPassword", async function (username, password) {
+  const user = await this.findOne({ username });
+  if (!user) throw new Error("user not found");
+
+  const salt = user.salt;
+  const hashedPass = user.password;
+
+  const userProvidedHash = createHmac("sha256", salt)
+    .update(password)
+    .digest("hex");
+
+  if (hashedPass !== userProvidedHash) {
+    throw new Error("Incorrect Pass");
+  }
+  return {...user._doc, password: undefined, salt: undefined };
+});
 
 const Users = mongoose.model("users", UserSchema);
 
