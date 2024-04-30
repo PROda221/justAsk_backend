@@ -10,13 +10,13 @@ const { connectToMongoDb } = require("./connectiion");
 
 const app = express();
 
-const PORT = 8001;
+const PORT = process.env.PORT || 8001;
 const backendName = "justAskBackend";
 
 const server = http.createServer(app)
 const io = new Server(server);
 
-connectToMongoDb(`mongodb://127.0.0.1:27017/${backendName}`)
+connectToMongoDb(`${process.env.MONGO_URL}${backendName}`)
   .then(() => console.log("mongoDb connected successfully!"))
   .catch((err) => console.log("mongoDb connection failed :", err));
 
