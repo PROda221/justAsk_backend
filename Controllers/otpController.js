@@ -9,9 +9,15 @@ const sendOTP = async (req, res) => {
     const { emailId } = req.body;
     // Check if user is already present
     const checkUserPresent = await User.findOne({ emailId });
+    if(!checkUserPresent){
+      return res.status(404).json({
+        success: false,
+        message: "Email dosent exist",        
+      });
+    }
     // If user found with provided email
     if (checkUserPresent) {
-      let otp = otpGenerator.generate(6, {
+      let otp = otpGenerator.generate(4, {
         upperCaseAlphabets: false,
         lowerCaseAlphabets: false,
         specialChars: false,
@@ -23,7 +29,7 @@ const sendOTP = async (req, res) => {
       else{
         result = await OtpModel.create({emailId, otp})
       }
-      await sendVerificationEmail(emailId, otp)
+      await sendVerificationEmail(emailId, otp) 
       return res.status(200).json({
         success: true,
         message: "OTP sent successfully",

@@ -2,6 +2,33 @@ const Users = require("../Modals/users");
 const OtpModel = require("../Modals/otpModel");
 const { getToken } = require("../Services/authentication");
 
+const checkAccount = async (req, res) => {
+  try{
+    const { username, password, emailId } = req.body;
+    if (!username || !password || !emailId) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "either username, pass or email or genres are missing",
+        });
+    }else{
+      const findUser = await Users.findOne({username})
+      if(findUser){
+        return res.status(400).json({success:false, message:"Username already taken" })
+      }
+       const findEmail = await Users.findOne({emailId})
+      if(findEmail){
+        return res.status(400).json({success:false, message:"Email already exists" })
+    }
+    return res.status(200).json({success: true, message: "This is new user"})
+  }
+}
+  catch(err){
+    return res.status(500).json({success: true, message: err})
+  }
+}
+
 const createAccount = async (req, res) => {
   try {
     const { username, password, emailId, adviceGenre } = req.body;
@@ -9,15 +36,16 @@ const createAccount = async (req, res) => {
       return res
         .status(400)
         .json({
+          success: false,
           message: "either username, pass or email or genres are missing",
         });
     }
     await Users.create({ username, password, emailId, adviceGenre });
-    return res.status(200).json({ message: "Account created!" });
+    return res.status(200).json({ success: true, message: "Account created!" });
   } catch (err) {
     return res
       .status(500)
-      .json({ success: true, message: "some error occured : " + err.message });
+      .json({ success: false, message: "some error occured : " + err.message });
   }
 };
 
@@ -72,4 +100,5 @@ module.exports = {
   createAccount,
   loginAccount,
   changePass,
+  checkAccount
 };
