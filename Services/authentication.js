@@ -10,11 +10,12 @@ const getToken = (user) => {
 };
 
 const findToken = (token) => {
+  if(!token){
+    return false;
+  }
   const access_token = token.split("Bearer ");
   if (!access_token[1]) {
-    return res.status(400).json({
-      message: "No access token found. You are not authorized",
-    });
+    return false;
   } return access_token[1]
 }
 

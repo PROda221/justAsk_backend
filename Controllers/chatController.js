@@ -32,7 +32,6 @@ const fetchAllUsers = async (req, res) => {
 const fetchProfile = async (req, res) => {
   try {
     let verified = await verifyToken(req.headers["authorization"]);
-    console.log('a :', verified)
     if (verified) {
       let response = verified;
       return res.status(200).json({ success: true, response });

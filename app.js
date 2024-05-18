@@ -16,9 +16,13 @@ const backendName = "justAskBackend";
 const server = http.createServer(app);
 const io = new Server(server);
 
-connectToMongoDb(`${process.env.MONGO_URL}${backendName}`)
-  .then(() => console.log("mongoDb connected successfully!"))
-  .catch((err) => console.log("mongoDb connection failed :", err));
+// connectToMongoDb(`${process.env.MONGO_URL}${backendName}`)
+//   .then(() => console.log("mongoDb connected successfully!"))
+//   .catch((err) => console.log("mongoDb connection failed :", err));
+
+connectToMongoDb(`mongodb://127.0.0.1:27017/${backendName}`)
+.then(() => console.log("mongoDb connected successfully!"))
+.catch((err) => console.log("mongoDb connection failed :", err));
 
 app.use(express.json());
 app.use("/users", userRouter);
