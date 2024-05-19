@@ -27,6 +27,7 @@ connectToMongoDb(`mongodb://127.0.0.1:27017/${backendName}`)
 app.use(express.json());
 app.use("/users", userRouter);
 app.use(cors());
+app.use(express.static('ProfileImgs'));
 
 io.use((socket, next) => {
   const token = socket.handshake.query.token;

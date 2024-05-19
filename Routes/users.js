@@ -1,6 +1,8 @@
 const express = require('express')
 const {otpRouter} = require('../Routes/otpRouter')
-const {createAccount, loginAccount, changePass, checkAccount, searchUsers} = require('../Controllers/users')
+const {commentRouter} = require('../Routes/commentRoute')
+const {uploadAndCheckFile} = require('../Services/multerConfig')
+const {createAccount, loginAccount, changePass, checkAccount, searchUsers, uploadProfileAndStatus, getUserProfile} = require('../Controllers/users')
 const {fetchAllUsers, fetchProfile} = require('../Controllers/chatController')
 
 const userRouter = express.Router()
@@ -13,6 +15,9 @@ userRouter.post('/forgotPass', changePass)
 userRouter.get('/allUsers', fetchAllUsers)
 userRouter.get('/profile', fetchProfile)
 userRouter.post('/search', searchUsers)
+userRouter.post('/upload', uploadAndCheckFile, uploadProfileAndStatus)
+userRouter.get('/getProfile', getUserProfile)
+userRouter.use('/feedback', commentRouter)
 
 
 

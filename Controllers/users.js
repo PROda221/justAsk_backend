@@ -2,7 +2,7 @@ const Users = require("../Modals/users");
 const OtpModel = require("../Modals/otpModel");
 const { ObjectId } = require("mongodb");
 const { getToken } = require("../Services/authentication");
-const {verifyToken} = require('../Services/authentication')
+const { verifyToken } = require("../Services/authentication");
 
 const checkAccount = async (req, res) => {
   try {
@@ -99,6 +99,77 @@ const changePass = async (req, res) => {
   }
 };
 
+const uploadProfileAndStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const profilePic = req.file
+      ? {
+          filename: req.file.filename,
+          path: req.file.path,
+        }
+      : null;
+    console.log("file is :", profilePic);
+    console.log("status is :", status);
+    let verified = await verifyToken(req.headers["authorization"]);
+    if (!verified) {
+      return res
+        .status(401)
+        .json({ success: false, message: "unauthorized access" });
+    }
+    if (status && profilePic) {
+      await Users.findOneAndUpdate(
+        { username: verified.username },
+        { status, filename: profilePic.filename, path: profilePic.path }
+      );
+      return res
+        .status(200)
+        .json({ success: true, message: "status and profile pic updated" });
+    }
+    if (profilePic) {
+      await Users.findOneAndUpdate(
+        { username: verified.username },
+        { filename: profilePic.filename, path: profilePic.path }
+      );
+      return res
+        .status(200)
+        .json({ success: true, message: "profile pic updated" });
+    }
+    if (status) {
+      await Users.findOneAndUpdate({ username: verified.username }, { status });
+      return res.status(200).json({ success: true, message: "status updated" });
+    }
+    if (!status && !profilePic) {
+      return res
+        .status(400)
+        .json({ success: false, message: "status or profile pic missing" });
+    }
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const getUserProfile = async (req, res, next) => {
+  try {
+    let verified = await verifyToken(req.headers["authorization"]);
+    if (!verified) {
+      return res
+        .status(401)
+        .json({ success: false, message: "unauthorized access" });
+    }
+     let userProfile = await Users.findOne({ username: verified.username });
+     console.log('userProfile :', userProfile)
+
+     let resp = {profile: userProfile.filename, status: userProfile.status}
+      
+      return res
+        .status(200)
+        .json({ success: true, response: resp });
+    }
+   catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 const searchUsers = async (req, res) => {
   try {
     const { genreName, username } = req.body;
@@ -186,4 +257,6 @@ module.exports = {
   changePass,
   checkAccount,
   searchUsers,
+  uploadProfileAndStatus,
+  getUserProfile
 };

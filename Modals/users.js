@@ -45,6 +45,10 @@ const UserSchema = new mongoose.Schema(
       ],
       required: true,
     },
+    status: { type: String },
+    filename: { type: String },
+    path: { type: String },
+    contentType: { type: String }
   },
   { timestamps: true }
 );
