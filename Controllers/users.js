@@ -63,7 +63,10 @@ const loginAccount = async (req, res) => {
     const resultedUser = await Users.matchPassword(username, password);
     if (resultedUser) {
       const access_token = getToken(resultedUser);
-      return res.status(200).json({ access_token, message: "success" });
+      return res.status(200).json({
+        access_token,
+        message: "success",
+      });
     } else {
       return res
         .status(404)
@@ -156,16 +159,17 @@ const getUserProfile = async (req, res, next) => {
         .status(401)
         .json({ success: false, message: "unauthorized access" });
     }
-     let userProfile = await Users.findOne({ username: verified.username });
-     console.log('userProfile :', userProfile)
+    let userProfile = await Users.findOne({ username: verified.username });
 
-     let resp = {profile: userProfile.filename, status: userProfile.status}
-      
-      return res
-        .status(200)
-        .json({ success: true, response: resp });
-    }
-   catch (err) {
+    let resp = {
+      profilePic: userProfile.filename,
+      status: userProfile.status,
+      username: userProfile.username,
+      emailId: userProfile.emailId,
+    };
+
+    return res.status(200).json({ success: true, ...resp });
+  } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
@@ -183,19 +187,46 @@ const searchUsers = async (req, res) => {
         .status(401)
         .json({ success: false, message: "unauthorized access" });
     }
-    if (!genreName && !username) {
+    if (genreName.length === 0 && !username) {
       return res.status(400).json({
         success: false,
         message: "Either provide username or genre to search",
       });
     }
-    if (username && genreName) {
-      const user = await Users.findOne({ username, adviceGenre: genreName });
-      if (user) {
-        return res.status(200).json({
-          success: true,
-          data: [{ username: user.username, adviceGenre: user.adviceGenre }],
+    if (username && genreName.length > 0) {
+      const query = {
+        username: new RegExp(`^${username}`),
+        adviceGenre: { $in: genreName },
+        ...(lastId && { _id: { $gt: lastId } }),
+      };
+      const allUsers = await Users.find(query).sort({ _id: 1 }).limit(limit);
+      if (allUsers) {
+        console.log("bc", allUsers);
+        let newData = allUsers.map((value) => {
+          return {
+            username: value.username,
+            adviceGenre: value.adviceGenre,
+            status: value.status,
+            pic: value.filename,
+          };
         });
+
+        if (allUsers) {
+          const response = {
+            success: true,
+            limit,
+            data: newData,
+          };
+
+          // Include the _id of the last document in the current page
+          if (allUsers.length > 0) {
+            response.lastId = allUsers[allUsers.length - 1]._id;
+          } else {
+            response.lastId = "";
+          }
+
+          return res.status(200).json(response);
+        }
       } else {
         return res.status(404).json({
           success: false,
@@ -205,30 +236,20 @@ const searchUsers = async (req, res) => {
       }
     }
     if (username) {
-      const user = await Users.findOne({ username });
-      if (user) {
-        return res.status(200).json({
-          success: true,
-          data: [{ username: user.username, adviceGenre: user.adviceGenre }],
-        });
-      } else {
-        return res.status(404).json({
-          success: false,
-          message:
-            "No users found. Try changing the genre or check the username",
-        });
-      }
-    }
-    if (genreName) {
       const query = {
-        adviceGenre: genreName,
+        username: new RegExp(`^${username}`),
         ...(lastId && { _id: { $gt: lastId } }),
       };
+      console.log("inside only username");
       const allUsers = await Users.find(query).sort({ _id: 1 }).limit(limit);
-      // .toArray(); // Ensure documents are returned in ascending order by _id
-
+      console.log("allUsers :", allUsers);
       let newData = allUsers.map((value) => {
-        return { username: value.username, adviceGenre: value.adviceGenre };
+        return {
+          username: value.username,
+          adviceGenre: value.adviceGenre,
+          status: value.status,
+          pic: value.filename,
+        };
       });
 
       if (allUsers) {
@@ -241,6 +262,48 @@ const searchUsers = async (req, res) => {
         // Include the _id of the last document in the current page
         if (allUsers.length > 0) {
           response.lastId = allUsers[allUsers.length - 1]._id;
+        } else {
+          response.lastId = "";
+        }
+
+        res.status(200).json(response);
+      } else {
+        return res.status(404).json({
+          success: false,
+          message:
+            "No users found. Try changing the genre or check the username",
+        });
+      }
+    }
+    if (genreName.length > 0) {
+      const query = {
+        adviceGenre: { $in: genreName },
+        ...(lastId && { _id: { $gt: lastId } }),
+      };
+      const allUsers = await Users.find(query).sort({ _id: 1 }).limit(limit);
+      // .toArray(); // Ensure documents are returned in ascending order by _id
+
+      let newData = allUsers.map((value) => {
+        return {
+          username: value.username,
+          adviceGenre: value.adviceGenre,
+          status: value.status,
+          pic: value.filename,
+        };
+      });
+
+      if (allUsers) {
+        const response = {
+          success: true,
+          limit,
+          data: newData,
+        };
+
+        // Include the _id of the last document in the current page
+        if (allUsers.length > 0) {
+          response.lastId = allUsers[allUsers.length - 1]._id;
+        } else {
+          response.lastId = "";
         }
 
         res.status(200).json(response);
@@ -258,5 +321,5 @@ module.exports = {
   checkAccount,
   searchUsers,
   uploadProfileAndStatus,
-  getUserProfile
+  getUserProfile,
 };

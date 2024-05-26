@@ -33,8 +33,20 @@ const fetchProfile = async (req, res) => {
   try {
     let verified = await verifyToken(req.headers["authorization"]);
     if (verified) {
-      let response = verified;
-      return res.status(200).json({ success: true, response });
+      let user = await Users.findOne({ username: verified.username });
+      if (user) {
+        let responseObj = {
+          success: true,
+          userDetails: {
+            username: user.username,
+            adviceGenre: user.adviceGenre,
+            status: user.status,
+            profilePic: user.filename,
+          },
+        };
+        return res.status(200).json({ success: true, response: responseObj });
+      }
+      return res.status(404).json({ success: true, message: "User not found" });
     }
     return res
       .status(403)

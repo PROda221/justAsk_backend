@@ -42,7 +42,7 @@ const activeConnections = new Map();
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
 
-  console.log("A user connected", socket.id);
+  console.log("A user connected", socket.id, userId);
   // Store the socket connection in the map
   activeConnections.set(userId, socket);
 
