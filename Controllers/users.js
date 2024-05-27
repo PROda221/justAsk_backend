@@ -240,9 +240,7 @@ const searchUsers = async (req, res) => {
         username: new RegExp(`^${username}`),
         ...(lastId && { _id: { $gt: lastId } }),
       };
-      console.log("inside only username");
       const allUsers = await Users.find(query).sort({ _id: 1 }).limit(limit);
-      console.log("allUsers :", allUsers);
       let newData = allUsers.map((value) => {
         return {
           username: value.username,
