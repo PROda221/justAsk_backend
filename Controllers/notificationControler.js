@@ -17,7 +17,6 @@ const getDeviceToken = async (req, res) => {
       { deviceToken }
     );
     if (updatedDeviceToken) {
-      console.log("updatedDeviceToken :", updatedDeviceToken);
       return res
         .status(200)
         .json({ success: true, message: "device token added" });

@@ -8,6 +8,8 @@ const { userRouter } = require("./Routes/users");
 
 const { connectToMongoDb } = require("./connectiion");
 
+const {verifyToken} = require('./Services/authentication')
+
 const {
   initializeNotifications,
   sendNotification,
@@ -58,8 +60,10 @@ function findKeysByValue(map, targetValue) {
   return keys;
 }
 
-io.on("connection", (socket) => {
-  const userId = socket.handshake.query.userId;
+io.on("connection", async (socket) => {
+  const token = socket.handshake.query.token;
+  let verified = await verifyToken(`Bearer ${token}`);
+  let userId = verified.username;
   activeConnections.set(userId, socket);
   userStatus.set(userId, "online");
 
