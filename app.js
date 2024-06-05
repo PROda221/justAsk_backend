@@ -8,6 +8,11 @@ const { userRouter } = require("./Routes/users");
 
 const { connectToMongoDb } = require("./connectiion");
 
+const {
+  initializeNotifications,
+  sendNotification,
+} = require("./Services/notification");
+
 const app = express();
 
 const PORT = process.env.PORT || 8001;
@@ -24,6 +29,8 @@ connectToMongoDb(`mongodb://127.0.0.1:27017/${backendName}`)
   .then(() => console.log("mongoDb connected successfully!"))
   .catch((err) => console.log("mongoDb connection failed :", err));
 
+initializeNotifications();
+
 app.use(express.json());
 app.use("/users", userRouter);
 app.use(cors());
@@ -39,6 +46,7 @@ io.use((socket, next) => {
 
 const activeConnections = new Map();
 const chatPartners = new Map();
+const userStatus = new Map();
 
 function findKeysByValue(map, targetValue) {
   const keys = [];
@@ -53,16 +61,17 @@ function findKeysByValue(map, targetValue) {
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.userId;
   activeConnections.set(userId, socket);
+  userStatus.set(userId, "online");
 
   let allChatPartners = findKeysByValue(chatPartners, userId);
-      allChatPartners.forEach((partnerId) => {
-        let partnerSocket = activeConnections.get(partnerId);
-        if (partnerSocket) {
-          partnerSocket.emit("statusUpdate", { userId, status: "online" });
-        }
-        // chatPartners.delete(partnerId)
-
-      });
+  allChatPartners.forEach((partnerId) => {
+    let partnerSocket = activeConnections.get(partnerId);
+    let status = userStatus.get(partnerId);
+    if (partnerSocket) {
+      partnerSocket.emit("statusUpdate", { userId, status: status });
+    }
+    // chatPartners.delete(partnerId)
+  });
 
   console.log("A user connected", socket.id, userId);
   // Store the socket connection in the map
@@ -72,12 +81,24 @@ io.on("connection", (socket) => {
     chatPartners.set(userId, chatPartnerId);
     let chatPartnerSocket = activeConnections.get(chatPartnerId);
     let userSocket = activeConnections.get(userId);
+    let chatPartnerStatus = userStatus.get(chatPartnerId);
     if (chatPartnerSocket) {
       userSocket.emit("statusUpdate", {
         chatPartnerId,
-        status: "online",
+        status: chatPartnerStatus,
       });
     }
+  });
+
+  socket.on("statusUpdate", (userId, status) => {
+    userStatus.set(userId, status);
+    let allChatPartners = findKeysByValue(chatPartners, userId);
+    allChatPartners.forEach((partnerId) => {
+      let partnerSocket = activeConnections.get(partnerId);
+      if (partnerSocket) {
+        partnerSocket.emit("statusUpdate", { userId, status: status });
+      }
+    });
   });
 
   // Remove the socket connection from the map when disconnected
@@ -85,31 +106,36 @@ io.on("connection", (socket) => {
     const disconnectedUser = activeConnections.get(userId);
     if (disconnectedUser) {
       let allChatPartners = findKeysByValue(chatPartners, userId);
-      console.log("allChatPartners :", allChatPartners);
       allChatPartners.forEach((partnerId) => {
         let partnerSocket = activeConnections.get(partnerId);
+        userStatus.set(userId, "offline");
         if (partnerSocket) {
-          partnerSocket.emit("statusUpdate", { userId, status: "offline" });
+          let currentUserStatus = userStatus.get(userId);
+          partnerSocket.emit("statusUpdate", {
+            userId,
+            status: currentUserStatus,
+          });
         }
         // chatPartners.delete(partnerId)
-
       });
 
-      activeConnections.delete(userId)
+      activeConnections.delete(userId);
 
       console.log(`User disconnected: ${socket.id}`);
     }
   });
 
-  // socket.on("chat message", (msg, receiverId) => {
-  //   console.log("Message received:", msg, "Receiver ID:", receiverId);
-  //   const receiverSocket = activeConnections.get(receiverId);
-  //   if (receiverSocket) {
-  //     receiverSocket.emit("chat message", msg);
-  //   } else {
-  //     console.log("Receiver is not connected");
-  //   }
-  // });
+  socket.on("chat message", (msg, senderId, receiverId, type) => {
+    const receiverSocket = activeConnections.get(receiverId);
+    const receiverStatus = userStatus.get(receiverId);
+    if (receiverSocket) {
+      if (receiverStatus === "online") {
+        receiverSocket.emit("chat message", msg, type);
+      } else {
+        sendNotification({ receiverId, msg, type, senderId });
+      }
+    }
+  });
 });
 
 server.listen(PORT, () => console.log("Server started on Port ", PORT));

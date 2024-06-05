@@ -35,6 +35,7 @@ const UserSchema = new mongoose.Schema(
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     emailId: { type: String, required: true, unique: true },
+    deviceToken: {type: String},
     salt: { type: String },
     adviceGenre: {
       type: [
