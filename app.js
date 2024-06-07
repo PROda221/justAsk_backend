@@ -134,7 +134,7 @@ io.on("connection", async (socket) => {
     const receiverStatus = userStatus.get(receiverId);
     if (receiverSocket) {
       if (receiverStatus === "online") {
-        receiverSocket.emit("chat message", msg, type);
+        receiverSocket.emit("chat message", msg, type, senderId);
       } else {
         sendNotification({ receiverId, msg, type, senderId });
       }
