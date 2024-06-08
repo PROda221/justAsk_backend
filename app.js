@@ -138,6 +138,8 @@ io.on("connection", async (socket) => {
       } else {
         sendNotification({ receiverId, msg, type, senderId });
       }
+    }else {
+      sendNotification({ receiverId, msg, type, senderId });
     }
   });
 });

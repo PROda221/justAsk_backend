@@ -12,24 +12,39 @@ const initializeNotifications = () => {
   });
 };
 
+const baseURL = `http://10.0.2.2:8001`
+
 const sendNotification = async (data) => {
   try {
     let userToNotify = await Users.findOne({ username: data.receiverId });
     if (userToNotify) {
       const message = {
         data: {
-            senderUsername: data.senderId,
-            message: data.msg,
-            type: data.type
+          notifee: JSON.stringify({
+            body: data.msg,
+            title: data.senderId,
+            type: data.type,
+            android: {
+              priority: 'high',
+              channelId: 'test',
+              pressAction: {
+                id: 'default',
+              },
+              largeIcon: `${baseURL}/${data.senderId}-.png`,
+              circularLargeIcon: true,
+            },
+          }),
+          message: data.msg,
+          senderUsername: data.senderId,
+          type: data.type,
         },
-        notification: {
-          title: data.senderId,
-          body: data.msg,
+        android: {
+          priority: 'high',
         },
         token: userToNotify.deviceToken,
       };
       const messaging = await getMessaging().send(message);
-      console.log("Successfully sent message:", messaging);
+      console.log("Successfully sent message:", messaging, data.msg);
     }
   } catch (err) {
     console.log("Error sending message:", err);
