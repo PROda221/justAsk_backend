@@ -1,4 +1,5 @@
 const Users = require("../Modals/users");
+const Comments = require("../Modals/commentModel");
 const { verifyToken } = require("../Services/authentication");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -32,8 +33,20 @@ const fetchAllUsers = async (req, res) => {
 const fetchProfile = async (req, res) => {
   try {
     let verified = await verifyToken(req.headers["authorization"]);
+    let { username } = req.body;
     if (verified) {
-      let user = await Users.findOne({ username: verified.username });
+      let user = await Users.findOne({ username });
+      let averageRating = await Comments.aggregate([
+        {
+          $match: { username },
+        },
+        {
+          $group: {
+            _id: "$username",
+            averageStars: { $avg: "$rating" },
+          },
+        },
+      ]);
       if (user) {
         let responseObj = {
           success: true,
@@ -42,6 +55,7 @@ const fetchProfile = async (req, res) => {
             adviceGenre: user.adviceGenre,
             status: user.status,
             profilePic: user.filename,
+            averageRating: averageRating ? averageRating : -1,
           },
         };
         return res.status(200).json({ success: true, response: responseObj });
