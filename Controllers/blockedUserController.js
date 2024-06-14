@@ -1,5 +1,5 @@
 const Users = require("../Modals/users");
-const BlockedUsers = require("../Modals/BlockedUsersModel");
+const BlockedUsers = require("../Modals/blockedUsersModel");
 const { ObjectId } = require("mongodb");
 const { verifyToken } = require("../Services/authentication");
 
