@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const CommentSchema = new mongoose.Schema(
     {
       username: { type: String, required: true },
-      commentUserId: { type: String, required: true, unique: true },
+      commentUserId: { type: String, required: true },
       content: { type: String, required: true },
       rating: {type: Number, required: true}
     },

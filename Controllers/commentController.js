@@ -39,23 +39,23 @@ const fetchUserFeedbacks = async (req, res) => {
     });
 
     let averageRating = await Comments.aggregate([
-        {
-          $match: { username }
+      {
+        $match: { username },
+      },
+      {
+        $group: {
+          _id: "$username",
+          averageStars: { $avg: "$rating" },
         },
-        {
-          $group: {
-            _id: "$username",
-            averageStars: { $avg: "$rating" }
-          }
-        }
-      ])
+      },
+    ]);
 
     if (userFeedbacks) {
       const response = {
         success: true,
         limit,
         data: newData,
-        averageRating
+        averageRating,
       };
 
       // Include the _id of the last document in the current page
@@ -64,6 +64,52 @@ const fetchUserFeedbacks = async (req, res) => {
       }
 
       return res.status(200).json(response);
+    }
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: true, message: "some error occured : " + err.message });
+  }
+};
+
+const getYourComment = async (req, res) => {
+  try {
+    let verified = await verifyToken(req.headers["authorization"]);
+    if (!verified) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not Authorized!" });
+    }
+    let { username } = req.body;
+    console.log("red.body :", req.body);
+
+    if (!username) {
+      return res.status(400).json({
+        success: false,
+        message: "Username is missing!",
+      });
+    }
+    let yourComment = await Comments.findOne({
+      username,
+      commentUserId: verified.username,
+    });
+    if (yourComment) {
+      let obj = {
+        username: yourComment.username,
+        commentUserId: yourComment.commentUserId,
+        content: yourComment.content,
+        rating: yourComment.rating,
+        updatedAt: yourComment.updatedAt,
+      };
+      return res.status(200).json({
+        success: true,
+        message: "your comment exists",
+        yourComment: obj,
+      });
+    } else {
+      return res
+        .status(200)
+        .json({ success: false, message: "your comment dosent exists" });
     }
   } catch (err) {
     return res
@@ -88,6 +134,23 @@ const addComment = async (req, res) => {
         success: false,
         message: "Either username, comment or rating is missing!",
       });
+    }
+    let yourComment = await Comments.findOne({
+      username,
+      commentUserId: verified.username,
+    });
+    if (yourComment) {
+      await Comments.findOneAndUpdate(
+        { username, commentUserId: verified.username },
+        {
+          content,
+          rating,
+        }
+      );
+
+      return res
+        .status(200)
+        .json({ success: true, message: "comment updated successfully" });
     }
     let addedComment = await Comments.create({
       username,
@@ -128,4 +191,5 @@ module.exports = {
   fetchUserFeedbacks,
   fetchProfile,
   addComment,
+  getYourComment,
 };

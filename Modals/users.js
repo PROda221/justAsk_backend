@@ -54,7 +54,7 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.index({ username: 1 });
 
-UserSchema.pre("save", function (next) {
+UserSchema.pre('save', function (next) {
   const user = this;
   if (!user.isModified("password")) return;
 
@@ -66,6 +66,22 @@ UserSchema.pre("save", function (next) {
   this.salt = salt;
   this.password = hashedPass;
   next();
+});
+
+UserSchema.pre(["findOneAndUpdate"], async function (next) {
+  const data = this.getUpdate();
+  if (data.password) {
+    const salt = randomBytes(16).toString();
+    const hashedPass = createHmac("sha256", salt)
+      .update(data.password)
+      .digest("hex");
+  
+    data.salt = salt;
+    data.password = hashedPass;
+    next();
+  }
+  next()
+
 });
 
 UserSchema.static("matchPassword", async function (username, password) {
