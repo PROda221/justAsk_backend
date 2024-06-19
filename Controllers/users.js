@@ -201,7 +201,6 @@ const searchUsers = async (req, res) => {
       };
       const allUsers = await Users.find(query).sort({ _id: 1 }).limit(limit);
       if (allUsers) {
-        console.log("bc", allUsers);
         let newData = allUsers.map((value) => {
           return {
             username: value.username,
