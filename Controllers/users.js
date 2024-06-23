@@ -1,5 +1,7 @@
 const Users = require("../Modals/users");
 const OtpModel = require("../Modals/otpModel");
+const Comments = require("../Modals/commentModel");
+
 const { ObjectId } = require("mongodb");
 const { getToken } = require("../Services/authentication");
 const { verifyToken } = require("../Services/authentication");
@@ -159,6 +161,18 @@ const getUserProfile = async (req, res, next) => {
         .status(401)
         .json({ success: false, message: "unauthorized access" });
     }
+    let averageRating = await Comments.aggregate([
+      {
+        $match: { username: verified.username },
+      },
+      {
+        $group: {
+          _id: "$username",
+          averageStars: { $avg: "$rating" },
+        },
+      },
+    ]);
+
     let userProfile = await Users.findOne({ username: verified.username });
 
     let resp = {
@@ -166,6 +180,10 @@ const getUserProfile = async (req, res, next) => {
       status: userProfile.status,
       username: userProfile.username,
       emailId: userProfile.emailId,
+      adviceGenre: userProfile.adviceGenre,
+      averageRating: averageRating ? averageRating : -1,
+      
+
     };
 
     return res.status(200).json({ success: true, ...resp });
