@@ -113,8 +113,6 @@ const uploadProfileAndStatus = async (req, res, next) => {
           path: req.file.path,
         }
       : null;
-    console.log("file is :", profilePic);
-    console.log("status is :", status);
     let verified = await verifyToken(req.headers["authorization"]);
     if (!verified) {
       return res
