@@ -60,7 +60,9 @@ const loginAccount = async (req, res) => {
     if (!username || !password) {
       return res
         .status(400)
-        .json({ message: "either username, pass is missing" });
+        .json({
+          message: "Please enter both your username and password to proceed.",
+        });
     }
     const resultedUser = await Users.matchPassword(username, password);
     if (resultedUser) {
@@ -72,10 +74,31 @@ const loginAccount = async (req, res) => {
     } else {
       return res
         .status(404)
-        .json({ success: false, message: "User does not exist" });
+        .json({
+          success: false,
+          message:
+            "Account not found. Please check your username or password and try again",
+        });
     }
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    console.log('err is :', err)
+
+    if(err = 'Incorrect Pass'){
+      return res
+      .status(404)
+      .json({
+        success: false,
+        message:
+          "Whoops! That password didn't work. Give it another shot!",
+      });
+    }
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message:
+          "Oops! Something went wrong on our end. Please hang tight and try again shortly.",
+      });
   }
 };
 
@@ -180,8 +203,6 @@ const getUserProfile = async (req, res, next) => {
       emailId: userProfile.emailId,
       adviceGenre: userProfile.adviceGenre,
       averageRating: averageRating ? averageRating : -1,
-      
-
     };
 
     return res.status(200).json({ success: true, ...resp });

@@ -13,7 +13,7 @@ const initializeNotifications = () => {
 };
 
 // const baseURL = `http://10.0.2.2:8001`
-const baseUrl = 'https://justask-backend.onrender.com'
+const baseURL = 'https://justask-backend.onrender.com'
 
 const sendNotification = async (data) => {
   try {

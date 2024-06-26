@@ -35,7 +35,7 @@ const UserSchema = new mongoose.Schema(
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     emailId: { type: String, required: true, unique: true },
-    deviceToken: {type: String},
+    deviceToken: { type: String },
     salt: { type: String },
     adviceGenre: {
       type: [
@@ -54,7 +54,7 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.index({ username: 1 });
 
-UserSchema.pre('save', function (next) {
+UserSchema.pre("save", function (next) {
   const user = this;
   if (!user.isModified("password")) return;
 
@@ -75,18 +75,19 @@ UserSchema.pre(["findOneAndUpdate"], async function (next) {
     const hashedPass = createHmac("sha256", salt)
       .update(data.password)
       .digest("hex");
-  
+
     data.salt = salt;
     data.password = hashedPass;
     next();
   }
-  next()
-
+  next();
 });
 
 UserSchema.static("matchPassword", async function (username, password) {
   const user = await this.findOne({ username });
-  if (!user) throw new Error("user not found");
+  if (!user) {
+    return null
+  }
 
   const salt = user.salt;
   const hashedPass = user.password;
@@ -98,7 +99,7 @@ UserSchema.static("matchPassword", async function (username, password) {
   if (hashedPass !== userProvidedHash) {
     throw new Error("Incorrect Pass");
   }
-  return {...user._doc, password: undefined, salt: undefined };
+  return { ...user._doc, password: undefined, salt: undefined };
 });
 
 const Users = mongoose.model("users", UserSchema);
