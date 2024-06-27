@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { createHmac, randomBytes } = require("crypto");
+const {responseStrings} = require('../Constants/responseStrings')
 
 const allGenres = [
   "Health & Fitness",
@@ -97,7 +98,7 @@ UserSchema.static("matchPassword", async function (username, password) {
     .digest("hex");
 
   if (hashedPass !== userProvidedHash) {
-    throw new Error("Incorrect Pass");
+    throw new Error(responseStrings.loginAccount.incorrectPassCondition);
   }
   return { ...user._doc, password: undefined, salt: undefined };
 });

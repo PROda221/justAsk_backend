@@ -3,6 +3,7 @@ const OtpModel = require("../Modals/otpModel");
 const Comments = require("../Modals/commentModel");
 
 const { ObjectId } = require("mongodb");
+const {responseStrings} = require('../Constants/responseStrings')
 const { getToken } = require("../Services/authentication");
 const { verifyToken } = require("../Services/authentication");
 
@@ -61,7 +62,7 @@ const loginAccount = async (req, res) => {
       return res
         .status(400)
         .json({
-          message: "Please enter both your username and password to proceed.",
+          message: responseStrings.loginAccount.usernamePassMissing,
         });
     }
     const resultedUser = await Users.matchPassword(username, password);
@@ -77,27 +78,24 @@ const loginAccount = async (req, res) => {
         .json({
           success: false,
           message:
-            "Account not found. Please check your username or password and try again",
+          responseStrings.loginAccount.accountNotFound,
         });
     }
   } catch (err) {
-    console.log('err is :', err)
-
-    if(err = 'Incorrect Pass'){
+    if (err instanceof Error && err.message === responseStrings.loginAccount.incorrectPassCondition) {
       return res
-      .status(404)
-      .json({
-        success: false,
-        message:
-          "Whoops! That password didn't work. Give it another shot!",
-      });
+        .status(404)
+        .json({
+          success: false,
+          message: responseStrings.loginAccount.incorrectPass,
+        });
     }
     return res
       .status(500)
       .json({
         success: false,
         message:
-          "Oops! Something went wrong on our end. Please hang tight and try again shortly.",
+          responseStrings.loginAccount.serverError,
       });
   }
 };
