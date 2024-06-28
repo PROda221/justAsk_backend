@@ -6,6 +6,18 @@ const responseStrings = {
         incorrectPassCondition: "Incorrect Pass",
         serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
 
+    },
+    checkAccount: {
+        fieldsMissing: "Username, password, or email is missing. Please fill in all fields.",
+        usernameTaken: "Username already taken. Try something unique!",
+        emailExists: "Email already exists. Try logging in or use a different email.",
+        newUser: "This is new user",
+        serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
+    },
+    createAccount: {
+        fieldsMissing: "Username, password, or email is missing. Please fill in all fields.",
+        accountCreated: "Account created! Welcome aboard!",
+        serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
     }
 }
 

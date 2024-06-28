@@ -3,7 +3,7 @@ const OtpModel = require("../Modals/otpModel");
 const Comments = require("../Modals/commentModel");
 
 const { ObjectId } = require("mongodb");
-const {responseStrings} = require('../Constants/responseStrings')
+const { responseStrings } = require("../Constants/responseStrings");
 const { getToken } = require("../Services/authentication");
 const { verifyToken } = require("../Services/authentication");
 
@@ -13,27 +13,32 @@ const checkAccount = async (req, res) => {
     if (!username || !password || !emailId) {
       return res.status(400).json({
         success: false,
-        message: "either username, pass or email or genres are missing",
+        message: responseStrings.checkAccount.fieldsMissing,
       });
     } else {
       const findUser = await Users.findOne({ username });
       if (findUser) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Username already taken" });
+        return res.status(400).json({
+          success: false,
+          message: responseStrings.checkAccount.usernameTaken,
+        });
       }
       const findEmail = await Users.findOne({ emailId });
       if (findEmail) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Email already exists" });
+        return res.status(400).json({
+          success: false,
+          message: responseStrings.checkAccount.emailExists,
+        });
       }
       return res
         .status(200)
-        .json({ success: true, message: "This is new user" });
+        .json({ success: true, message: responseStrings.checkAccount.newUser });
     }
   } catch (err) {
-    return res.status(500).json({ success: true, message: err });
+    return res.status(500).json({
+      success: true,
+      message: responseStrings.checkAccount.serverError,
+    });
   }
 };
 
@@ -43,15 +48,23 @@ const createAccount = async (req, res) => {
     if (!username || !password || !emailId || !adviceGenre) {
       return res.status(400).json({
         success: false,
-        message: "either username, pass or email or genres are missing",
+        message: responseStrings.createAccount.fieldsMissing,
       });
     }
     await Users.create({ username, password, emailId, adviceGenre });
-    return res.status(200).json({ success: true, message: "Account created!" });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: responseStrings.createAccount.accountCreated,
+      });
   } catch (err) {
     return res
       .status(500)
-      .json({ success: false, message: "some error occured : " + err.message });
+      .json({
+        success: false,
+        message: responseStrings.createAccount.serverError,
+      });
   }
 };
 
@@ -59,11 +72,9 @@ const loginAccount = async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
-      return res
-        .status(400)
-        .json({
-          message: responseStrings.loginAccount.usernamePassMissing,
-        });
+      return res.status(400).json({
+        message: responseStrings.loginAccount.usernamePassMissing,
+      });
     }
     const resultedUser = await Users.matchPassword(username, password);
     if (resultedUser) {
@@ -73,30 +84,25 @@ const loginAccount = async (req, res) => {
         message: "success",
       });
     } else {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message:
-          responseStrings.loginAccount.accountNotFound,
-        });
+      return res.status(404).json({
+        success: false,
+        message: responseStrings.loginAccount.accountNotFound,
+      });
     }
   } catch (err) {
-    if (err instanceof Error && err.message === responseStrings.loginAccount.incorrectPassCondition) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: responseStrings.loginAccount.incorrectPass,
-        });
-    }
-    return res
-      .status(500)
-      .json({
+    if (
+      err instanceof Error &&
+      err.message === responseStrings.loginAccount.incorrectPassCondition
+    ) {
+      return res.status(404).json({
         success: false,
-        message:
-          responseStrings.loginAccount.serverError,
+        message: responseStrings.loginAccount.incorrectPass,
       });
+    }
+    return res.status(500).json({
+      success: false,
+      message: responseStrings.loginAccount.serverError,
+    });
   }
 };
 
