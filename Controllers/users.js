@@ -110,9 +110,9 @@ const changePass = async (req, res) => {
   try {
     const { emailId, password, otp } = req.body;
     if (!password) {
-      return res.status(400).json({ message: "password is missing" });
+      return res.status(400).json({ message: responseStrings.changePass.passwordMissing });
     } else if (!emailId) {
-      return res.status(400).json({ message: "emailId is missing" });
+      return res.status(400).json({ message: responseStrings.changePass.emailMissing });
     }
     const otpVerification = await OtpModel.findOne({ emailId, otp });
     if (otpVerification.verified) {
@@ -120,11 +120,11 @@ const changePass = async (req, res) => {
       await Users.findOneAndUpdate({ emailId }, { password });
       return res
         .status(200)
-        .json({ success: true, message: "password updated successfully" });
+        .json({ success: true, message: responseStrings.changePass.passwordUpdated });
     } else {
       return res
         .status(404)
-        .json({ success: false, message: "otp not verified" });
+        .json({ success: false, message: responseStrings.changePass.otpNotVerified });
     }
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
