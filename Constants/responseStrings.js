@@ -23,15 +23,18 @@ const responseStrings = {
         passwordMissing: "Please enter your password.",
         emailMissing: "Please enter your email.",
         passwordUpdated: "Your password has been updated successfully. You're all set! 🌟🔒",
-        otpNotVerified: "The OTP verification failed. Please try again."
+        otpNotVerified: "The OTP verification failed. Please try again.",
+        serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
     },
     sendOtp: {
         emailDosentExist: "The email address doesn't exist. Sign up with this email to create a new account.",
-        otpSent: "OTP sent successfully. Please check your email."
+        otpSent: "OTP sent successfully. Please check your email.",
+        serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
     },
     verifyOtp: {
         otpVerified: "OTP verified successfully. You're all set!",
-        otpIncorrect: "The OTP entered is incorrect. Please double-check and try again."
+        otpIncorrect: "The OTP entered is incorrect. Please double-check and try again.",
+        serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
     }
 }
 

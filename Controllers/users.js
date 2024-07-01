@@ -127,7 +127,7 @@ const changePass = async (req, res) => {
         .json({ success: false, message: responseStrings.changePass.otpNotVerified });
     }
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: responseStrings.changePass.serverError });
   }
 };
 

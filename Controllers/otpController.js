@@ -38,7 +38,7 @@ const sendOTP = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: responseStrings.sendOtp.serverError });
   }
 };
 
@@ -66,7 +66,7 @@ const verifyOtp = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: responseStrings.verifyOtp.serverError });
   }
 };
 
