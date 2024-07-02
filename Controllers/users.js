@@ -6,6 +6,77 @@ const { ObjectId } = require("mongodb");
 const { responseStrings } = require("../Constants/responseStrings");
 const { getToken } = require("../Services/authentication");
 const { verifyToken } = require("../Services/authentication");
+const admin = require("firebase-admin")
+
+const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({
+        message: responseStrings.googleLogin.idTokenMissing,
+      });
+    }
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { uid, email, name } = decodedToken;
+    const resultedUser = await Users.findOne({emailId: email});
+    if (resultedUser) {
+      const access_token = getToken(resultedUser);
+      return res.status(200).json({
+        access_token,
+        message: "success",
+      });
+    } else {
+      return res.status(201).json({
+        success: true,
+        message: responseStrings.googleLogin.createAccount,
+        googleData: { uid, email, name },
+      });
+    }
+  } catch (err) {
+    console.log('err is :', err)
+    if (
+      err instanceof Error &&
+      err.message === responseStrings.loginAccount.incorrectPassCondition
+    ) {
+      return res.status(404).json({
+        success: false,
+        message: responseStrings.loginAccount.incorrectPass,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: responseStrings.loginAccount.serverError,
+    });
+  }
+}
+
+const checkUsername = async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) {
+      return res.status(400).json({
+        success: false,
+        message: responseStrings.checkUsername.usernameMissing,
+      });
+    }
+    const findUser = await Users.findOne({ username });
+    if (findUser) {
+      return res.status(400).json({
+        success: false,
+        message: responseStrings.checkUsername.usernameTaken,
+      });
+    }
+    return res
+      .status(200)
+      .json({ success: true, message: responseStrings.checkUsername.usernameOk });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: responseStrings.checkUsername.serverError,
+    })
+  }
+}
 
 const checkAccount = async (req, res) => {
   try {
@@ -360,4 +431,6 @@ module.exports = {
   searchUsers,
   uploadProfileAndStatus,
   getUserProfile,
+  googleLogin,
+  checkUsername
 };

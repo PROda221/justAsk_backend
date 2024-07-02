@@ -7,10 +7,21 @@ const responseStrings = {
         serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
 
     },
+    googleLogin: {
+        idTokenMissing: "Google login failed. Please try again.",
+        createAccount: "Create new account through google login"
+    },
     checkAccount: {
-        fieldsMissing: "Username, password, or email is missing. Please fill in all fields.",
+        fieldsMissing: "Username is missing. Please fill in all fields.",
         usernameTaken: "Username already taken. Try something unique!",
         emailExists: "Email already exists. Try logging in or use a different email.",
+        newUser: "This is new user",
+        serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
+    },
+    checkUsername: {
+        usernameMissing: "Username is missing. Please fill in all fields.",
+        usernameTaken: "Username already taken. Try something unique!",
+        usernameOk: "Username is unique",
         newUser: "This is new user",
         serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
     },
