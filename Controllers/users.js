@@ -6,7 +6,7 @@ const { ObjectId } = require("mongodb");
 const { responseStrings } = require("../Constants/responseStrings");
 const { getToken } = require("../Services/authentication");
 const { verifyToken } = require("../Services/authentication");
-const admin = require("firebase-admin")
+const admin = require("firebase-admin");
 
 const googleLogin = async (req, res) => {
   try {
@@ -18,7 +18,7 @@ const googleLogin = async (req, res) => {
     }
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const { uid, email, name } = decodedToken;
-    const resultedUser = await Users.findOne({emailId: email});
+    const resultedUser = await Users.findOne({ emailId: email });
     if (resultedUser) {
       const access_token = getToken(resultedUser);
       return res.status(200).json({
@@ -33,7 +33,6 @@ const googleLogin = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log('err is :', err)
     if (
       err instanceof Error &&
       err.message === responseStrings.loginAccount.incorrectPassCondition
@@ -49,7 +48,7 @@ const googleLogin = async (req, res) => {
       message: responseStrings.loginAccount.serverError,
     });
   }
-}
+};
 
 const checkUsername = async (req, res) => {
   try {
@@ -69,14 +68,17 @@ const checkUsername = async (req, res) => {
     }
     return res
       .status(200)
-      .json({ success: true, message: responseStrings.checkUsername.usernameOk });
+      .json({
+        success: true,
+        message: responseStrings.checkUsername.usernameOk,
+      });
   } catch (err) {
     return res.status(500).json({
       success: false,
       message: responseStrings.checkUsername.serverError,
-    })
+    });
   }
-}
+};
 
 const checkAccount = async (req, res) => {
   try {
@@ -123,19 +125,15 @@ const createAccount = async (req, res) => {
       });
     }
     await Users.create({ username, password, emailId, adviceGenre });
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: responseStrings.createAccount.accountCreated,
-      });
+    return res.status(200).json({
+      success: true,
+      message: responseStrings.createAccount.accountCreated,
+    });
   } catch (err) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: responseStrings.createAccount.serverError,
-      });
+    return res.status(500).json({
+      success: false,
+      message: responseStrings.createAccount.serverError,
+    });
   }
 };
 
@@ -181,9 +179,13 @@ const changePass = async (req, res) => {
   try {
     const { emailId, password, otp } = req.body;
     if (!password) {
-      return res.status(400).json({ message: responseStrings.changePass.passwordMissing });
+      return res
+        .status(400)
+        .json({ message: responseStrings.changePass.passwordMissing });
     } else if (!emailId) {
-      return res.status(400).json({ message: responseStrings.changePass.emailMissing });
+      return res
+        .status(400)
+        .json({ message: responseStrings.changePass.emailMissing });
     }
     const otpVerification = await OtpModel.findOne({ emailId, otp });
     if (otpVerification.verified) {
@@ -191,14 +193,25 @@ const changePass = async (req, res) => {
       await Users.findOneAndUpdate({ emailId }, { password });
       return res
         .status(200)
-        .json({ success: true, message: responseStrings.changePass.passwordUpdated });
+        .json({
+          success: true,
+          message: responseStrings.changePass.passwordUpdated,
+        });
     } else {
       return res
         .status(404)
-        .json({ success: false, message: responseStrings.changePass.otpNotVerified });
+        .json({
+          success: false,
+          message: responseStrings.changePass.otpNotVerified,
+        });
     }
   } catch (err) {
-    return res.status(500).json({ success: false, message: responseStrings.changePass.serverError });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: responseStrings.changePass.serverError,
+      });
   }
 };
 
@@ -222,6 +235,16 @@ const uploadProfileAndStatus = async (req, res, next) => {
         { username: verified.username },
         { status, filename: profilePic.filename, path: profilePic.path }
       );
+      let commentUser = await Comments.findOne({
+        commentUserId: verified.username,
+      });
+      if (!commentUser?.commentUserPic) {
+        await Comments.findOneAndUpdate(
+          { commentUserId: verified.username },
+          { commentUserPic: profilePic.filename }
+        );
+      }
+
       return res
         .status(200)
         .json({ success: true, message: "status and profile pic updated" });
@@ -231,6 +254,15 @@ const uploadProfileAndStatus = async (req, res, next) => {
         { username: verified.username },
         { filename: profilePic.filename, path: profilePic.path }
       );
+      let commentUser = await Comments.findOne({
+        commentUserId: verified.username,
+      });
+      if (!commentUser?.commentUserPic) {
+        await Comments.findOneAndUpdate(
+          { commentUserId: verified.username },
+          { commentUserPic: profilePic.filename }
+        );
+      }
       return res
         .status(200)
         .json({ success: true, message: "profile pic updated" });
@@ -432,5 +464,5 @@ module.exports = {
   uploadProfileAndStatus,
   getUserProfile,
   googleLogin,
-  checkUsername
+  checkUsername,
 };

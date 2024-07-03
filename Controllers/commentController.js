@@ -1,4 +1,5 @@
 const Comments = require("../Modals/commentModel");
+const Users = require('../Modals/users')
 const { verifyToken } = require("../Services/authentication");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -35,6 +36,7 @@ const fetchUserFeedbacks = async (req, res) => {
         content: value.content,
         commentUserId: value.commentUserId,
         rating: value.rating,
+        commentUserPic: value.commentUserPic,
       };
     });
 
@@ -152,11 +154,13 @@ const addComment = async (req, res) => {
         .status(200)
         .json({ success: true, message: "comment updated successfully" });
     }
+    let user = await Users.findOne({ username: verified.username });
     let addedComment = await Comments.create({
       username,
       content,
       rating,
       commentUserId: verified.username,
+      commentUserPic: user.filename,
     });
     if (addedComment) {
       return res

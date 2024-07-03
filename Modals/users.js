@@ -47,7 +47,7 @@ const UserSchema = new mongoose.Schema(
       ],
       required: true,
     },
-    status: { type: String },
+    status: { type: String, default: "busy" },
     filename: { type: String },
   },
   { timestamps: true }
