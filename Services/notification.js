@@ -3,7 +3,7 @@ const { initializeApp, applicationDefault } = require("firebase-admin/app");
 // const serviceAccount = require("path/to/serviceAccountKey.json");
 const { getMessaging } = require("firebase-admin/messaging");
 
-const initializeNotifications = () => {
+const initializeFirebaseAdmin = () => {
   process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
   initializeApp({
@@ -12,8 +12,8 @@ const initializeNotifications = () => {
   });
 };
 
-// const baseURL = `http://10.0.2.2:8001`
-const baseURL = 'https://justask-backend.onrender.com'
+const baseURL = `http://10.0.2.2:8001`
+// const baseURL = 'https://justask-backend.onrender.com'
 
 const sendNotification = async (data) => {
   try {
@@ -22,7 +22,7 @@ const sendNotification = async (data) => {
       const message = {
         data: {
           notifee: JSON.stringify({
-            body: data.msg,
+            body: data.type === 'image' ? 'image' : data.msg,
             title: data.senderId,
             type: data.type,
             android: {
@@ -33,10 +33,13 @@ const sendNotification = async (data) => {
               },
               largeIcon: `${baseURL}/${data.senderId}-.png`,
               circularLargeIcon: true,
+              style: data.type === 'image' ? { type: 0, picture: data.msg } : '',
             },
           }),
           message: data.msg,
+          filename: data.msg.filename ?? '',
           senderUsername: data.senderId,
+          receiverUsername: data.receiverId,
           type: data.type,
         },
         android: {
@@ -53,6 +56,6 @@ const sendNotification = async (data) => {
 };
 
 module.exports = {
-  initializeNotifications,
+  initializeFirebaseAdmin,
   sendNotification,
 };

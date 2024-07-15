@@ -11,7 +11,7 @@ const { connectToMongoDb } = require("./connectiion");
 const {verifyToken} = require('./Services/authentication')
 
 const {
-  initializeNotifications,
+  initializeFirebaseAdmin,
   sendNotification,
 } = require("./Services/notification");
 
@@ -31,7 +31,7 @@ connectToMongoDb(`${process.env.MONGO_URL}${backendName}`)
 //   .then(() => console.log("mongoDb connected successfully!"))
 //   .catch((err) => console.log("mongoDb connection failed :", err));
 
-initializeNotifications();
+initializeFirebaseAdmin();
 
 app.use(express.json());
 app.use("/users", userRouter);
@@ -134,7 +134,7 @@ io.on("connection", async (socket) => {
     const receiverStatus = userStatus.get(receiverId);
     if (receiverSocket) {
       if (receiverStatus === "online") {
-        receiverSocket.emit("chat message", msg, type, senderId);
+        receiverSocket.emit("chat message", msg, type, senderId, receiverId);
       } else {
         sendNotification({ receiverId, msg, type, senderId });
       }
