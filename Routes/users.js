@@ -9,6 +9,7 @@ const {getDeviceToken} = require('../Controllers/notificationControler')
 
 const userRouter = express.Router()
 
+userRouter.get('/ping', (req, res) => res.send('pong'))
 userRouter.post('/signUp',createAccount)
 userRouter.post('/checkUser', checkAccount)
 userRouter.post('/login',loginAccount)
