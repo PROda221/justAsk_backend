@@ -37,6 +37,7 @@ const fetchUserFeedbacks = async (req, res) => {
         commentUserId: value.commentUserId,
         rating: value.rating,
         commentUserPic: value.commentUserPic,
+        updatedAt: value.updatedAt,
       };
     });
 
