@@ -33,7 +33,12 @@ const sendNotification = async (data) => {
               },
               largeIcon: `${baseURL}/${data.senderId}-.png`,
               circularLargeIcon: true,
-              style: data.type === 'image' ? { type: 0, picture: data.msg } : '',
+              ...(data.type === 'image' && {
+                style: {
+                  type: 0,
+                  picture: data.msg
+                }
+              }),
             },
           }),
           message: data.msg,
