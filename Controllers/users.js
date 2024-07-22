@@ -5,6 +5,7 @@ const Comments = require("../Modals/commentModel");
 const { ObjectId } = require("mongodb");
 const { responseStrings } = require("../Constants/responseStrings");
 const { getToken } = require("../Services/authentication");
+const {deleteExistingImage} = require('../Services/multerConfig')
 const { verifyToken } = require("../Services/authentication");
 const admin = require("firebase-admin");
 
@@ -217,7 +218,7 @@ const changePass = async (req, res) => {
 
 const uploadProfileAndStatus = async (req, res, next) => {
   try {
-    const { status } = req.body;
+    const { status, currentPath } = req.body;
     const profilePic = req.file
       ? {
           filename: req.file.filename,
@@ -229,6 +230,9 @@ const uploadProfileAndStatus = async (req, res, next) => {
       return res
         .status(401)
         .json({ success: false, message: "unauthorized access" });
+    }
+    if(currentPath){
+      deleteExistingImage(currentPath)
     }
     if (status && profilePic) {
       await Users.findOneAndUpdate(

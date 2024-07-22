@@ -31,7 +31,7 @@ const sendNotification = async (data) => {
               pressAction: {
                 id: 'default',
               },
-              largeIcon: `${baseURL}/${data.senderId}-.png`,
+              largeIcon: `${baseURL}/${data.profilePic}-.png`,
               circularLargeIcon: true,
               ...(data.type === 'image' && {
                 style: {
@@ -46,6 +46,7 @@ const sendNotification = async (data) => {
           senderUsername: data.senderId,
           receiverUsername: data.receiverId,
           type: data.type,
+          profilePic: data.profilePic,
         },
         android: {
           priority: 'high',

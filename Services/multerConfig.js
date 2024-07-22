@@ -1,5 +1,6 @@
 // Set up Multer storage configuration
 const multer = require("multer");
+const fs = require('fs');
 const path = require("path");
 const { verifyToken } = require("./authentication");
 const storage = multer.diskStorage({
@@ -8,11 +9,21 @@ const storage = multer.diskStorage({
   },
   filename: async function (req, file, cb) {
     let verified = await verifyToken(req.headers["authorization"]);
-    cb(null, `${verified.username}-${path.extname(file.originalname)}`);
+    cb(null, `${verified.username}-profilePic-${Date.now()}${path.extname(file.originalname)}`);
   },
 });
 
 const upload = multer({ storage: storage });
+
+const deleteExistingImage = async (currentPath) => {
+  const existingImagePath = `ProfileImgs/${currentPath}`; // Adjust the path as needed
+
+  fs.unlink(existingImagePath, (err) => {
+    if (err && err.code !== 'ENOENT') {
+      return res.status(500).json({ error: 'Error deleting existing image' });
+    }
+  });
+};
 
 const uploadAndCheckFile = (req, res, next) => {
     verifyToken(req.headers["authorization"]).then((verified) => {
@@ -32,4 +43,5 @@ const uploadAndCheckFile = (req, res, next) => {
 
 module.exports = {
   uploadAndCheckFile,
+  deleteExistingImage
 };

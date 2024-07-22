@@ -129,17 +129,17 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("chat message", (msg, senderId, receiverId, type) => {
+  socket.on("chat message", (msg, senderId, receiverId, type, profilePic) => {
     const receiverSocket = activeConnections.get(receiverId);
     const receiverStatus = userStatus.get(receiverId);
     if (receiverSocket) {
       if (receiverStatus === "online") {
-        receiverSocket.emit("chat message", msg, type, senderId, receiverId);
+        receiverSocket.emit("chat message", msg, type, senderId, receiverId, profilePic);
       } else {
-        sendNotification({ receiverId, msg, type, senderId });
+        sendNotification({ receiverId, msg, type, senderId, profilePic });
       }
     }else {
-      sendNotification({ receiverId, msg, type, senderId });
+      sendNotification({ receiverId, msg, type, senderId, profilePic });
     }
   });
 });
