@@ -31,7 +31,7 @@ const sendNotification = async (data) => {
               pressAction: {
                 id: 'default',
               },
-              largeIcon: `${baseURL}/${data.profilePic}-.png`,
+              largeIcon: `${baseURL}/${data.profilePic}`,
               circularLargeIcon: true,
               ...(data.type === 'image' && {
                 style: {
