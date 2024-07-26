@@ -71,7 +71,7 @@ const fetchUserFeedbacks = async (req, res) => {
   } catch (err) {
     return res
       .status(500)
-      .json({ success: true, message: "some error occured : " + err.message });
+      .json({ success: false, message: "some error occured : " + err.message });
   }
 };
 
@@ -117,7 +117,7 @@ const getYourComment = async (req, res) => {
   } catch (err) {
     return res
       .status(500)
-      .json({ success: true, message: "some error occured : " + err.message });
+      .json({ success: false, message: "some error occured : " + err.message });
   }
 };
 
@@ -138,6 +138,7 @@ const addComment = async (req, res) => {
         message: "Either username, comment or rating is missing!",
       });
     }
+    let user = await Users.findOne({ username: verified.username });
     let yourComment = await Comments.findOne({
       username,
       commentUserId: verified.username,
@@ -148,14 +149,14 @@ const addComment = async (req, res) => {
         {
           content,
           rating,
+          commentUserPic: user.filename
         }
       );
 
       return res
         .status(200)
-        .json({ success: true, message: "comment updated successfully" });
+        .json({ success: true, message: "Comment updated successfully! Please come back later to see it reflected" });
     }
-    let user = await Users.findOne({ username: verified.username });
     let addedComment = await Comments.create({
       username,
       content,
@@ -166,12 +167,12 @@ const addComment = async (req, res) => {
     if (addedComment) {
       return res
         .status(200)
-        .json({ success: true, message: "comment added successfully" });
+        .json({ success: true, message: "Comment added successfully! Please come back later to see it reflected" });
     }
   } catch (err) {
     return res
       .status(500)
-      .json({ success: true, message: "some error occured : " + err.message });
+      .json({ success: false, message: "some error occured : " + err.message });
   }
 };
 
@@ -188,7 +189,7 @@ const fetchProfile = async (req, res) => {
   } catch (err) {
     return res
       .status(500)
-      .json({ success: true, message: "some error occured : " + err.message });
+      .json({ success: false, message: "some error occured : " + err.message });
   }
 };
 
