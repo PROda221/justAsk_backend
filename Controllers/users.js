@@ -229,7 +229,7 @@ const uploadProfileAndStatus = async (req, res, next) => {
     if (!verified) {
       return res
         .status(401)
-        .json({ success: false, message: "unauthorized access" });
+        .json({ success: false, message: "Unauthorized Access! Please login again to continue" });
     }
     if(currentPath){
       deleteExistingImage(currentPath)
@@ -251,7 +251,7 @@ const uploadProfileAndStatus = async (req, res, next) => {
 
       return res
         .status(200)
-        .json({ success: true, message: "status and profile pic updated" });
+        .json({ success: true, message: "Your profile updated successfully" });
     }
     if (profilePic) {
       await Users.findOneAndUpdate(
@@ -269,16 +269,16 @@ const uploadProfileAndStatus = async (req, res, next) => {
       }
       return res
         .status(200)
-        .json({ success: true, message: "profile pic updated" });
+        .json({ success: true, message: "Your profile pic updated successfully" });
     }
     if (status) {
       await Users.findOneAndUpdate({ username: verified.username }, { status });
-      return res.status(200).json({ success: true, message: "status updated" });
+      return res.status(200).json({ success: true, message: "Your status updated successfully" });
     }
     if (!status && !profilePic) {
       return res
         .status(400)
-        .json({ success: false, message: "status or profile pic missing" });
+        .json({ success: false, message: "No data found to update" });
     }
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -291,7 +291,7 @@ const getUserProfile = async (req, res, next) => {
     if (!verified) {
       return res
         .status(401)
-        .json({ success: false, message: "unauthorized access" });
+        .json({ success: false, message: "Unauthorized Access! Please login again to continue" });
     }
     let averageRating = await Comments.aggregate([
       {
@@ -318,7 +318,7 @@ const getUserProfile = async (req, res, next) => {
 
     return res.status(200).json({ success: true, ...resp });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'We are unable to reach our servers, Please try again later' });
   }
 };
 
