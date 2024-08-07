@@ -1,5 +1,6 @@
 const Users = require("../Modals/users");
 const Comments = require("../Modals/commentModel");
+const BlockedUsers = require('../Modals/blockedUsersModel')
 const { verifyToken } = require("../Services/authentication");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -47,6 +48,8 @@ const fetchProfile = async (req, res) => {
           },
         },
       ]);
+      let blockedStatus = await BlockedUsers.findOne({ blocker: username, blocked: verified.username })
+      let yourBlockStatus = await BlockedUsers.findOne({ blocker: verified.username, blocked: username })
       if (user) {
         let responseObj = {
           success: true,
@@ -56,6 +59,8 @@ const fetchProfile = async (req, res) => {
             status: user.status,
             profilePic: user.filename,
             averageRating: averageRating ? averageRating : -1,
+            gotBlockedStatus: blockedStatus ? true : false,
+            youBlockedStatus: yourBlockStatus ? true : false
           },
         };
         return res.status(200).json({ success: true, response: responseObj });

@@ -15,6 +15,8 @@ const {
   sendNotification,
 } = require("./Services/notification");
 
+const {isUserBlocked} = require('./Controllers/blockedUserController')
+
 const app = express();
 
 const PORT = process.env.PORT || 8001;
@@ -129,18 +131,24 @@ io.on("connection", async (socket) => {
     }
   });
 
-  socket.on("chat message", (msg, senderId, receiverId, type, profilePic) => {
+  socket.on("chat message", async (msg, senderId, receiverId, type, profilePic) => {
     const receiverSocket = activeConnections.get(receiverId);
     const receiverStatus = userStatus.get(receiverId);
-    if (receiverSocket) {
-      if (receiverStatus === "online") {
-        receiverSocket.emit("chat message", msg, type, senderId, receiverId, profilePic);
-      } else {
+
+    if (await isUserBlocked(receiverId, senderId)) {
+      senderSocket = activeConnections.get(senderId)
+      senderSocket.emit("chat message", `blocked`, type, senderId, receiverId, profilePic, 'server');
+    } else {
+      if (receiverSocket) {
+        if (receiverStatus === "online") {
+          receiverSocket.emit("chat message", msg, type, senderId, receiverId, profilePic);
+        } else {
+          sendNotification({ receiverId, msg, type, senderId, profilePic });
+        }
+      }else {
         sendNotification({ receiverId, msg, type, senderId, profilePic });
       }
-    }else {
-      sendNotification({ receiverId, msg, type, senderId, profilePic });
-    }
+    }    
   });
 });
 

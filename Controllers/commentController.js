@@ -2,6 +2,8 @@ const Comments = require("../Modals/commentModel");
 const Users = require('../Modals/users')
 const { verifyToken } = require("../Services/authentication");
 const ObjectId = require("mongodb").ObjectId;
+const {redisClient} = require('../Services/redisInstance')
+const {isUserBlocked} = require('./blockedUserController')
 
 const fetchUserFeedbacks = async (req, res) => {
   try {
@@ -130,12 +132,18 @@ const addComment = async (req, res) => {
         .json({ success: false, message: "Not Authorized!" });
     }
     let { username, content, rating } = req.body;
-    console.log("red.body :", req.body);
 
     if (!username || !content || !rating) {
       return res.status(400).json({
         success: false,
         message: "Either username, comment or rating is missing!",
+      });
+    }
+    let blocked = await isUserBlocked(username, verified.username)
+    if(blocked){
+      return res.status(405).json({
+        success: false,
+        message: "This user has blocked you!",
       });
     }
     let user = await Users.findOne({ username: verified.username });
