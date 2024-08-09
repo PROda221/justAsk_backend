@@ -27,6 +27,7 @@ const responseStrings = {
     },
     createAccount: {
         fieldsMissing: "Username, password, or email is missing. Please fill in all fields.",
+        usernameSpace: "Username cannot contain spaces.",
         accountCreated: "Account created! Welcome aboard!",
         serverError: "Oops! Something went wrong on our end. Please hang tight and try again shortly."
     },

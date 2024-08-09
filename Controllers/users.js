@@ -5,7 +5,7 @@ const Comments = require("../Modals/commentModel");
 const { ObjectId } = require("mongodb");
 const { responseStrings } = require("../Constants/responseStrings");
 const { getToken } = require("../Services/authentication");
-const {deleteExistingImage} = require('../Services/multerConfig')
+const { deleteExistingImage } = require("../Services/multerConfig");
 const { verifyToken } = require("../Services/authentication");
 const admin = require("firebase-admin");
 
@@ -67,12 +67,10 @@ const checkUsername = async (req, res) => {
         message: responseStrings.checkUsername.usernameTaken,
       });
     }
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: responseStrings.checkUsername.usernameOk,
-      });
+    return res.status(200).json({
+      success: true,
+      message: responseStrings.checkUsername.usernameOk,
+    });
   } catch (err) {
     return res.status(500).json({
       success: false,
@@ -123,6 +121,12 @@ const createAccount = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: responseStrings.createAccount.fieldsMissing,
+      });
+    }
+    if (username.include(" ")) {
+      return res.status(400).json({
+        success: false,
+        message: responseStrings.createAccount.usernameSpace,
       });
     }
     await Users.create({ username, password, emailId, adviceGenre });
@@ -192,27 +196,21 @@ const changePass = async (req, res) => {
     if (otpVerification.verified) {
       await OtpModel.findOneAndDelete({ emailId, otp });
       await Users.findOneAndUpdate({ emailId }, { password });
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: responseStrings.changePass.passwordUpdated,
-        });
+      return res.status(200).json({
+        success: true,
+        message: responseStrings.changePass.passwordUpdated,
+      });
     } else {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: responseStrings.changePass.otpNotVerified,
-        });
+      return res.status(404).json({
+        success: false,
+        message: responseStrings.changePass.otpNotVerified,
+      });
     }
   } catch (err) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: responseStrings.changePass.serverError,
-      });
+    return res.status(500).json({
+      success: false,
+      message: responseStrings.changePass.serverError,
+    });
   }
 };
 
@@ -227,12 +225,13 @@ const uploadProfileAndStatus = async (req, res, next) => {
       : null;
     let verified = await verifyToken(req.headers["authorization"]);
     if (!verified) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Unauthorized Access! Please login again to continue" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized Access! Please login again to continue",
+      });
     }
-    if(currentPath){
-      deleteExistingImage(currentPath)
+    if (currentPath) {
+      deleteExistingImage(currentPath);
     }
     if (status && profilePic) {
       await Users.findOneAndUpdate(
@@ -267,13 +266,16 @@ const uploadProfileAndStatus = async (req, res, next) => {
           { commentUserPic: profilePic.filename }
         );
       }
-      return res
-        .status(200)
-        .json({ success: true, message: "Your profile pic updated successfully" });
+      return res.status(200).json({
+        success: true,
+        message: "Your profile pic updated successfully",
+      });
     }
     if (status) {
       await Users.findOneAndUpdate({ username: verified.username }, { status });
-      return res.status(200).json({ success: true, message: "Your status updated successfully" });
+      return res
+        .status(200)
+        .json({ success: true, message: "Your status updated successfully" });
     }
     if (!status && !profilePic) {
       return res
@@ -289,9 +291,10 @@ const getUserProfile = async (req, res, next) => {
   try {
     let verified = await verifyToken(req.headers["authorization"]);
     if (!verified) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Unauthorized Access! Please login again to continue" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized Access! Please login again to continue",
+      });
     }
     let averageRating = await Comments.aggregate([
       {
@@ -318,7 +321,10 @@ const getUserProfile = async (req, res, next) => {
 
     return res.status(200).json({ success: true, ...resp });
   } catch (err) {
-    return res.status(500).json({ success: false, message: 'We are unable to reach our servers, Please try again later' });
+    return res.status(500).json({
+      success: false,
+      message: "We are unable to reach our servers, Please try again later",
+    });
   }
 };
 
@@ -343,7 +349,11 @@ const searchUsers = async (req, res) => {
     }
     if (username && genreName.length > 0) {
       const query = {
-        username: new RegExp(`^${username}`),
+        username: {
+          $regex: new RegExp(`^${username}`),
+          $options: "i", // Case-insensitive option
+          $ne: verified.username,
+        },
         adviceGenre: { $in: genreName },
         ...(lastId && { _id: { $gt: lastId } }),
       };
@@ -384,7 +394,11 @@ const searchUsers = async (req, res) => {
     }
     if (username) {
       const query = {
-        username: new RegExp(`^${username}`),
+        username: {
+          $regex: new RegExp(`^${username}`),
+          $options: "i", // Case-insensitive option
+          $ne: verified.username,
+        },
         ...(lastId && { _id: { $gt: lastId } }),
       };
       const allUsers = await Users.find(query).sort({ _id: 1 }).limit(limit);
@@ -422,6 +436,9 @@ const searchUsers = async (req, res) => {
     }
     if (genreName.length > 0) {
       const query = {
+        username: {
+          $ne: verified.username,
+        },
         adviceGenre: { $in: genreName },
         ...(lastId && { _id: { $gt: lastId } }),
       };
